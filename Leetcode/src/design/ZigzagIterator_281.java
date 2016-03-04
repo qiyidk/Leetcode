@@ -1,7 +1,5 @@
 package design;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -13,21 +11,51 @@ import java.util.List;
  * @version 2016Äê3ÔÂ4ÈÕ
  */
 public class ZigzagIterator_281 {
-    private List<Integer> v = new ArrayList<Integer>();
-    private Iterator<Integer> i;
+    //It is my second time to do this problem
+    private int index = 0;
+    private int listNumber = 0;
+    private int maxL = 0; // max length of lists
+    private Integer nextValue = null;
+    private List<Integer>[] l;
+    private int k; 
+    @SuppressWarnings("unchecked")
     public ZigzagIterator_281(List<Integer> v1, List<Integer> v2) {
-        Iterator<Integer> i1 = v1.iterator();
-        Iterator<Integer> i2 = v2.iterator();
-        while (i1.hasNext() || i2.hasNext()){
-            if (i1.hasNext()) v.add(i1.next());
-            if (i2.hasNext()) v.add(i2.next());
+        this.k = 2;
+        l = (List<Integer>[]) new List[k];
+        l[0] = v1;
+        l[1] = v2;
+        // get max length
+        for (int i = 0 ; i < k; i++){
+            if (l[i].size() > maxL) maxL = l[i].size();
         }
-        i = v.iterator();
+        // set the first value
+        setNext();
     }
+
     public int next() {
-        return i.next();
+        if (!hasNext()) throw new RuntimeException("No such element");
+        int value = nextValue;
+        setNext();
+        return value;
     }
+
     public boolean hasNext() {
-        return i.hasNext();
+        return nextValue != null;
+    }
+    
+    private void setNext(){
+        while(index < maxL){
+            for (; listNumber < k; listNumber++){
+                if (index < l[listNumber].size()){
+                    nextValue = l[listNumber].get(index);
+                    listNumber++;
+                    return;
+                }
+            }
+            //go to next index
+            listNumber = 0;
+            index++;
+        }
+        nextValue = null;
     }
 }
