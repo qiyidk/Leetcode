@@ -50,7 +50,7 @@ public class VerifyPreorderSerializationofaBinaryTree_331 {
    }
    
    // 第一种方法唯一的问题是我们必须区分左右#，因而使得代码必须使用stack来记录
-   // 如果我们把当前level的含义定义为下一个节点所处的level，则遇到数字下一个level + 1，遇到左#，回退一格到根节点（level - 1），遇到右#再回退一格到父节点的上级节点，很自然的就会把level送到应该到的位置
+   // 每多一个数字，需要多一个pound sign来消除，本身会占用一个pound sign的位置，减少一个#，但是同时需要多两个#来完结，因此一共多一个#
    // two possible violations
    // pound signs are not enough, after traversal, level != 0
    // pound signs are redundant, during traversal, level = 0 
