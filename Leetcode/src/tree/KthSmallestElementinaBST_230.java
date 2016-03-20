@@ -13,21 +13,22 @@ import baseDataStructure.TreeNode;
 public class KthSmallestElementinaBST_230 {
     // the inorder traversal of a BST is in ascending order
     public int kthSmallest(TreeNode root, int k) {
-        int[] res = new int[]{0, 0};// counter, value
+        int[] res = new int[1]; // store the final value
         inOrderTraversal(root, k, res);
-        return res[1];
+        return res[0];
     }
-    private void inOrderTraversal(TreeNode root, int k, int[] res){
-        if (root.left != null) inOrderTraversal(root.left, k, res);
-        if (res[0] == k) return;
+    private int inOrderTraversal(TreeNode root, int k, int[] res){
+        if (root.left != null) k = inOrderTraversal(root.left, k, res);
+        if (k == 0) return 0;
         else{
             // visit root
-            res[0]++;
-            if (res[0] == k) {
-                res[1] = root.val;
-                return;
+            k--;
+            if (k == 0) {
+                res[0] = root.val;
+                return k;
             }
         }
-        if (root.right != null) inOrderTraversal(root.right, k, res);
+        if (root.right != null) k = inOrderTraversal(root.right, k, res);
+        return k;
     }
 }
