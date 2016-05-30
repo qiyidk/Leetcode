@@ -1,4 +1,4 @@
-package tree;
+package binarySearch;
 
 import baseDataStructure.TreeNode;
 
