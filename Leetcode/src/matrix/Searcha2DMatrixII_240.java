@@ -2,7 +2,8 @@ package matrix;
 
 public class Searcha2DMatrixII_240 {
     // It is my second time to do this problem(saved)
-    // we can start traversal from the left bottom corner, for each comparison, we can discard either one row or one colomn
+    // we can start traversal from the left bottom corner, for each comparison, we can discard either one row or one column
+    // if m is much greater than n, a binary search solution will be better:O(nlogm)
     public boolean searchMatrix(int[][] matrix, int target) {
         int m = matrix.length;
         if (m == 0) return false;

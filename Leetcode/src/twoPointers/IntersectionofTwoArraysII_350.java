@@ -1,4 +1,4 @@
-package array;
+package twoPointers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +63,8 @@ public class IntersectionofTwoArraysII_350 {
     }
     public int[] intersect3(int[] nums1, int[] nums2) {
         // follow-up2: (nums1.length = m, nums2.length = n, m < n)
-        // hashmap may bring a relatively big constance 
-        // two-pointers solution need sort, nlogn may be very big
-        // we can only sort nums1 and use binary search, it will cause mlogm + nlogm time
+        // we can only store num1 for hashing and traverse num2
+        // it will save space, the time will be almost the same
         // follow-up3:
         // if nums1 and nums2 are both too big, use external sort
         // if only nums2 is too big, put nums1 into a hashmap
