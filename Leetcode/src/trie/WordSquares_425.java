@@ -14,7 +14,7 @@ import java.util.List;
 public class WordSquares_425 {
     // since the length of words are the same
     // if they can form a word square, the number of words must be the same with the length
-    // the naive solution will be attempting all possible combination. it will take O(n^l * l^2) time
+    // the naive solution will be attempting all possible combinations. it will take O(n^l * l^2) time
     // it can be seen that if we select the first word abcd, the second words must starts with b, the third word must starts with c and followed by the thrid character of the second word.
     // i. select a
     // II. select b starts with 2th of a
@@ -22,15 +22,13 @@ public class WordSquares_425 {
     // IV. select d starts with 4th of a,b,c
     // V. select e starts with 5th of a,b,c,d
     // to select valid words efficiently, we can use a trie
+    // to make it more faster, we can store the list of words that starts with some pattern instead of word in the trie, but it will use more memory
     public List<List<String>> wordSquares(String[] words) {
         int l = words[0].length();
         List<List<String>> res = new ArrayList<List<String>>();
         List<String> tmp = new ArrayList<String>();
         Trie trie = new Trie();
         for (String word : words) trie.insert(word);
-        System.out.println(trie.search(new char[]{'a'}));
-        System.out.println(trie.search(new char[]{'l', 'a'}));
-
         collect(tmp, l, res, trie);
         return res;
     }
@@ -46,11 +44,9 @@ public class WordSquares_425 {
         List<String> nodes = trie.search(pattern);
         if (nodes == null) return;
         for (String n : nodes){
-            if (!tmp.contains(n)){
-                tmp.add(n);
-                collect(tmp, max, res, trie);
-                tmp.remove(tmp.size() - 1);
-            }
+            tmp.add(n);
+            collect(tmp, max, res, trie);
+            tmp.remove(tmp.size() - 1);
         }
     }
     private class Trie{

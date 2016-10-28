@@ -36,7 +36,7 @@ public class EqualSumSets {
                 v[j] += v[j - i];
             }
         }
-        return v[k] / 2;
+        return v[k] / 2; // note that for each arrangement, we will get two groups that have value = sum / 2
     }
     public int solution2(int n){
         if (n <= 2) return 0;
