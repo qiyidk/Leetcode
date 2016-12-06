@@ -30,6 +30,7 @@ public class NonoverlappingIntervals_435 {
     // therefore we already have a complete greedy method to pick best intervals
     // then we need to find an efficient way to do this
     // first we sort the array so that we won't miss any potential overlapping, and then we can do a consecutive process to deal with interval one by one
+    // actually, we don't need check the start, check end is enough
     public int eraseOverlapIntervals(Interval[] intervals) {
         if (intervals.length == 0) return 0;
         Arrays.sort(intervals, new Comparator<Interval>(){
@@ -39,16 +40,12 @@ public class NonoverlappingIntervals_435 {
             }
             });
         int remove = 0;
-        int lastStart = intervals[0].start;
         int lastEnd = intervals[0].end;
-        // note that the first element will never be removed
         for (int i = 1; i < intervals.length; i++){
-            if (intervals[i].start == lastStart) remove++; //remove current one
-            else if (intervals[i].start < lastEnd){
+            if (intervals[i].start < lastEnd){
                 if (intervals[i].end <= lastEnd){
                     // remove previous one
                     remove++;
-                    lastStart = intervals[i].start;
                     lastEnd = intervals[i].end;
                 }
                 else{
@@ -58,7 +55,6 @@ public class NonoverlappingIntervals_435 {
             }
             else{
                 //no overlapping, update new boundary
-                lastStart = intervals[i].start;
                 lastEnd = intervals[i].end;
             }
         }

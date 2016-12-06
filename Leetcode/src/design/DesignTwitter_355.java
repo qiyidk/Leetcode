@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * <p>
@@ -16,71 +18,129 @@ import java.util.Map;
  * @version 2016Äê6ÔÂ20ÈÕ
  */
 public class DesignTwitter_355 {
-    // one thing should be noticed is that one's followers may be very big, but followees usually a relatively small number
-    // therefore it would be better to search all the followees' twitters rather than storing current user's twitters for each of his followers when posting a twitter.
-    private class Msg{
-        private long tid;
-        private int id;
-        public Msg(long tid, int id){
-            this.tid = tid;
-            this.id = id;
+    private HashMap<Integer, User> users;
+    private long timestamp = 0L;
+    public synchronized long getTimestamp(){
+        return timestamp++;
+    }
+    private class Tweet implements Comparable<Tweet>{
+        private int tweetId;
+        private int userId;
+        private long time;
+        public Tweet(int userId, int tweetId){
+            this.userId = userId;
+            this.tweetId = tweetId;
+            this.time = getTimestamp();
+        }
+        public int compareTo(Tweet that){
+            if (this.time > that.time) return -1;
+            else if (this.time < that.time) return 1;
+            else return 0;
+        }
+    } 
+    private class User{
+        private int userId;
+        private List<Tweet> tweets;
+        private Set<Integer> follows;
+        public User(int userId){
+            this.userId = userId;
+            tweets = new ArrayList<Tweet>();
+            follows = new HashSet<Integer>();
+            follows.add(userId);
+        }
+        public void postTweet(int tweetId){
+            tweets.add(new Tweet(userId, tweetId));
+        }
+        // tweets for each user are ordered naturally, we don't need put all tweets into the heap
+        public List<Integer> getNewsFeed(){
+            PriorityQueue<Tweet> pq = new PriorityQueue<Tweet>();
+            List<Integer> res = new ArrayList<Integer>();
+            int n = follows.size();
+            int[] p = new int[n]; // pointer for each tweet list
+            List<List<Tweet>> userTweets = new ArrayList<List<Tweet>>();
+            HashMap<Integer, Integer> locater = new HashMap<Integer, Integer>();// userid -> array index
+            for (int userId : follows){
+                List<Tweet> list = users.get(userId).getTweets();
+                int index = userTweets.size();
+                locater.put(userId, index);
+                p[index] = list.size() - 1;
+                if (p[index] >= 0) pq.add(list.get(p[index]));
+                userTweets.add(list);
+            }
+            for (int i = 0; i < 10; i++){
+                if (pq.isEmpty()) break;
+                Tweet t = pq.remove();
+                res.add(t.tweetId);
+                int index = locater.get(t.userId);
+                p[index]--;
+                if (p[index] >= 0) pq.add(userTweets.get(index).get(p[index]));
+            }
+            return res;
+        }
+        public List<Tweet> getTweets(){
+            return tweets;
+        }
+        public void follow(int userId){
+            follows.add(userId);
+        }
+        public void unfollow(int userId){
+            if (userId == this.userId) return;
+            if (!follows.contains(userId)) return;
+            follows.remove(userId);
         }
     }
-    
-    private Map<Integer, List<Msg>> twitters = new HashMap<Integer, List<Msg>>();
-    private Map<Integer, HashSet<Integer>> follows = new HashMap<Integer, HashSet<Integer>>();
-    private long tid;// millis may have duplicate value
     /** Initialize your data structure here. */
     public DesignTwitter_355() {
-        tid = 0;
+        users = new HashMap<Integer, User>();
     }
     
     /** Compose a new tweet. */
-    public synchronized void postTweet(int userId, int tweetId) {
-        Msg m = new Msg(tid++, tweetId);
-        List<Msg> list = twitters.get(userId);
-        if (list == null) {
-            list = new ArrayList<Msg>();
-            twitters.put(userId, list);
+    public void postTweet(int userId, int tweetId) {
+        User u = users.get(userId);
+        if (u == null) {
+            u = new User(userId);
+            users.put(userId, u);
         }
-        list.add(m);
+        u.postTweet(tweetId);
     }
     
     /** Retrieve the 10 most recent tweet ids in the user's news feed. Each item in the news feed must be posted by users who the user followed or by the user herself. Tweets must be ordered from most recent to least recent. */
     public List<Integer> getNewsFeed(int userId) {
-        HashSet<Integer> followees1 = follows.get(userId);
-        HashSet<Integer> followees = new HashSet<Integer>();
-        if (followees1 != null) for (Integer i : followees1) followees.add(i);
-        followees.add(userId);
-        Msg[] msg = new Msg[10 * followees.size()];
-        int p = 0;
-        for (int id : followees){
-            List<Msg> m = twitters.get(id);
-            if (m == null) continue;
-            for (int i = m.size() - 1; i >= 0 && i >= m.size() - 10; i--) msg[p++] = m.get(i); //reverse order to get the lastest records
+        User u = users.get(userId);
+        if (u == null) {
+            u = new User(userId);
+            users.put(userId, u);
         }
-        Msg[] aux = new Msg[p];
-        System.arraycopy(msg, 0, aux, 0, p);
-        Arrays.sort(aux, (Msg m1, Msg m2) -> {return m2.tid == m1.tid ? 0 : m2.tid > m1.tid ? 1 : -1;});
-        List<Integer> res = new ArrayList<Integer>();
-        for (int i = 0; i < Math.min(10, p); i++) res.add(aux[i].id);// only get 10 lastest records
-        return res;
+        return u.getNewsFeed();
     }
     
     /** Follower follows a followee. If the operation is invalid, it should be a no-op. */
     public void follow(int followerId, int followeeId) {
-        HashSet<Integer> followees = follows.get(followerId);
-        if (followees == null) {
-            followees = new HashSet<Integer>();
-            follows.put(followerId, followees);
+        User u1 = users.get(followerId);
+        if (u1 == null) {
+            u1 = new User(followerId);
+            users.put(followerId, u1);
         }
-        followees.add(followeeId);
+        User u2 = users.get(followeeId);
+        if (u2 == null) {
+            u2 = new User(followeeId);
+            users.put(followeeId, u2);
+        }
+        u1.follow(followeeId);
     }
     
     /** Follower unfollows a followee. If the operation is invalid, it should be a no-op. */
     public void unfollow(int followerId, int followeeId) {
-        HashSet<Integer> followees = follows.get(followerId);
-        if (followees == null) return;
-        followees.remove(followeeId);
+        User u1 = users.get(followerId);
+        if (u1 == null) {
+            u1 = new User(followerId);
+            users.put(followerId, u1);
+        }
+        User u2 = users.get(followeeId);
+        if (u2 == null) {
+            u2 = new User(followeeId);
+            users.put(followeeId, u2);
+        }
+        u1.unfollow(followeeId);
     }
 }

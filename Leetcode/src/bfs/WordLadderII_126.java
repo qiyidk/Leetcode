@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,74 +15,83 @@ import java.util.Set;
  * @version 2016Äê8ÔÂ17ÈÕ
  */
 public class WordLadderII_126 {
-    // basic idea see world ladder1
+    // run a bfs, if it has already generated before, pass it.
+    // to save memory, use pathTo instead of the whole path
     public List<List<String>> findLadders(String beginWord, String endWord, Set<String> wordList) {
         List<List<String>> res = new ArrayList<List<String>>();
-        if (beginWord.equals(endWord)) {
-            List<String> r =  new ArrayList<String>();
-            r.add(beginWord);
-            res.add(r);
+        HashSet<String> prev = new HashSet<String>();
+        HashSet<String> cur = new HashSet<String>();
+        HashSet<String> next = new HashSet<String>();
+        HashMap<String, List<String>> pathTo = new HashMap<String, List<String>>();
+        if (!wordList.contains(beginWord) || !wordList.contains(endWord)) return res;
+        if (beginWord.equals(endWord)){
+            List<String> t = new ArrayList<String>();
+            t.add(beginWord);
+            res.add(t);
             return res;
         }
-        if (!wordList.contains(endWord)) return res;
-        Set<String> cur= new HashSet<String>();
-        Set<String> next = new HashSet<String>();
-        Set<String> visited = new HashSet<String>();
-        Map<String, List<String>> parents = new HashMap<String, List<String>>();// use parents to retrieve the word ladders
         cur.add(endWord);
-        visited.add(endWord);
-        while (!cur.isEmpty()){
-            for(String word : cur){
-                if (beginWord.equals(word)){
-                    // retrieve word ladders
-                    List<String> ladder = new ArrayList<String>(); 
-                    retrieve(word, parents, ladder, res, endWord);
-                    return res;
-                }
-                char[] str = word.toCharArray();
-                for(int i = 0; i < word.length(); i++){
-                    char tmp = str[i];
-                    for (char j = 'a'; j <= 'z'; j++){
-                        // try all possible words that differ with word by one letter
-                        str[i] = j;
-                        String word2 = new String(str); 
-                        if (wordList.contains(word2)){
-                            if (!visited.contains(word2)){
-                                next.add(word2);
-                                visited.add(word2);
-                            }
-                            if (!visited.contains(word2) || next.contains(word2)){ 
-                                // word2 is just added in current round
-                                List<String> parent = parents.get(word2);
-                                if (parent == null) {
-                                    parent = new ArrayList<String>();
-                                    parents.put(word2, parent);
-                                }
-                                parent.add(word);
-                            }                           
+        prev.add(endWord); // add to prev
+        boolean found = false;
+        while(cur.size() != 0){
+            for (String s : cur){
+                char[] c = s.toCharArray();
+                for (int i = 0; i < c.length; i++){
+                    char t = c[i];
+                    for (char cc = 'a'; cc <= 'z'; cc++){
+                        if (cc == t) continue;
+                        c[i] = cc;
+                        String str = new String(c);
+                        if (prev.contains(str) || !wordList.contains(str)) continue;
+                        List<String> list = pathTo.get(str);
+                        if (list == null) {
+                            list = new ArrayList<String>();
+                            pathTo.put(str, list);
                         }
+                        list.add(s);
+                        next.add(str);
+                        if (str.equals(beginWord)) found = true;
                     }
-                    str[i] = tmp;
+                    c[i] = t;
                 }
             }
+            if (found) break;
+            for (String str : next) prev.add(str);// note add next
             cur = next;
             next = new HashSet<String>();
         }
+        if (found){ // check found
+            List<String> tmp = new ArrayList<String>();
+            collect(pathTo, beginWord, res, tmp, endWord);
+        }
         return res;
     }
-    private void retrieve(String word, Map<String, List<String>> parents, List<String> ladder, List<List<String>> res, String endWord){
-        if (word.equals(endWord)){
-            List<String> r = new ArrayList<String>();
-            for(String s : ladder) r.add(s);
-            r.add(word);
+    private void collect(HashMap<String, List<String>> pathTo, String str, List<List<String>> res, List<String> tmp, String target){
+        tmp.add(str);
+        if (str.equals(target)){
+            // reach the start
+            List<String> r = new ArrayList<String>(tmp);
             res.add(r);
-            return;
         }
-        ladder.add(word);
-        List<String> parent = parents.get(word);
-        for (String w : parent){
-            retrieve(w, parents, ladder, res, endWord);
+        else {
+            List<String> list = pathTo.get(str);
+            for (String s : list) collect(pathTo, s, res, tmp, target);
         }
-        ladder.remove(ladder.size() - 1);
+        tmp.remove(tmp.size() - 1);
+    }
+    
+    public static void main(String[] args){
+        String b = "hot";
+        String e = "dog";
+        HashSet<String> dict = new HashSet<String>();
+        dict.add("hot");
+        dict.add("dog");
+        dict.add("cog");
+        dict.add("tot");
+        dict.add("hog");
+        dict.add("hop");
+        dict.add("pot");
+        dict.add("dot");
+        new WordLadderII_126().findLadders(b, e, dict);
     }
 }

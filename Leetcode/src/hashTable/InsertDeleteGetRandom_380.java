@@ -1,8 +1,7 @@
 package hashTable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Random;
 
 /**
  * <p>
@@ -13,41 +12,50 @@ import java.util.List;
  * @version 2016Äê8ÔÂ31ÈÕ
  */
 public class InsertDeleteGetRandom_380 {
-    private HashMap<Integer, Integer> indexMap;// (val, index)
-    private List<Integer> valueMap;// (index, val)
+    // use hashmap to deal with first two requirement
+    // use an extra hashmap to label current elements, when removing an element, switch indices so that the indices can still be continuous, just like shuffle
     /** Initialize your data structure here. */
+    private HashMap<Integer, Integer> indices; // val -> index
+    private HashMap<Integer, Integer> values; // index -> val
+    private Random rand;
     public InsertDeleteGetRandom_380() {
-        indexMap = new HashMap<Integer, Integer>();
-        valueMap = new ArrayList<Integer>();
+        indices = new HashMap<Integer, Integer>();
+        values = new HashMap<Integer, Integer>();
+        rand = new Random();
     }
     
     /** Inserts a value to the set. Returns true if the set did not already contain the specified element. */
     public boolean insert(int val) {
-        if (indexMap.containsKey(val)) return false;
-        int index = indexMap.size();
-        indexMap.put(val, index);
-        valueMap.add(val);
-        return true;
+        Integer index = indices.get(val);
+        if (index == null) {
+            indices.put(val, values.size());
+            values.put(values.size(), val);
+            return true;
+        }
+        return false;
     }
     
     /** Removes a value from the set. Returns true if the set contained the specified element. */
     public boolean remove(int val) {
-        if (!indexMap.containsKey(val)) return false;
-        //swap the last element and current element, then remove
-        int lastIndex = indexMap.size() - 1;
-        int lastV = valueMap.get(lastIndex);
-        int index = indexMap.remove(val);
-        valueMap.remove(lastIndex);
-        if (index != lastIndex){
-            indexMap.put(lastV, index);
-            valueMap.set(index, lastV);
+        Integer index = indices.remove(val);
+        if (index == null) return false;
+        int lastIndex = values.size() - 1;
+        if (indices.isEmpty() || index == lastIndex){ // note index == lastIndex
+            // don't need to swap
+            values.remove(index);
+        }
+        else{
+            int lastValue = values.get(lastIndex);
+            values.remove(lastIndex);
+            values.put(index, lastValue);
+            indices.put(lastValue, index);
         }
         return true;
     }
     
     /** Get a random element from the set. */
     public int getRandom() {
-        int index = (int)(Math.random() * valueMap.size());
-        return valueMap.get(index);
+        int index = rand.nextInt(indices.size());
+        return values.get(index);
     }
 }
