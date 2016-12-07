@@ -1,11 +1,9 @@
 package design;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -15,7 +13,7 @@ import java.util.Set;
  * </p>
  *
  * @author qiyi
- * @version 2016Äê6ÔÂ20ÈÕ
+ * @version 2016ï¿½ï¿½6ï¿½ï¿½20ï¿½ï¿½
  */
 public class DesignTwitter_355 {
     private HashMap<Integer, User> users;
